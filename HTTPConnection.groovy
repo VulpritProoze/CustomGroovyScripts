@@ -41,7 +41,7 @@ class HTTPSessionBasedConnection {
         baseUrl = url
     }
 
-    Object parse(Object payload) {
+    def parse(Object payload) {
         if (payload instanceof List && !payload.isEmpty()) {
             return payload[0]
         } else {
@@ -49,7 +49,7 @@ class HTTPSessionBasedConnection {
         }
     }
 
-    Object parseToJson(Object payload) {
+    def parseToJson(Object payload) {
         def transformedPayload = parse(payload)
         if (!transformedPayload || transformedPayload == [:]) {
             return [:]
@@ -74,7 +74,7 @@ class HTTPSessionBasedConnection {
         return connection
     }
 
-    public Object get(RequestBody request) {
+    public def get(RequestBody request) {
         def con = connect(request.url)
         con.setRequestMethod('GET')
         con.doOutput = true
@@ -101,7 +101,7 @@ class HTTPSessionBasedConnection {
         }
     }
 
-    public Object put(RequestBody request) {
+    public def put(RequestBody request) {
         def con = connect(request.url)
         con.setRequestMethod('PUT')
         con.doOutput = true
@@ -128,7 +128,7 @@ class HTTPSessionBasedConnection {
         }
     }
 
-    public Object delete(RequestBody request) {
+    public def delete(RequestBody request) {
         def con = connect(request.url)
         con.setRequestMethod('DELETE')
         for (prop in request.requestProperty) {
@@ -179,7 +179,7 @@ class HTTPSessionBasedConnection {
         }
     }
 
-    public Object post(RequestBody request) {
+    public def post(RequestBody request) {
         def con = connect(request.url)
         con.setRequestMethod('POST')
         con.setDoOutput(true)
@@ -208,7 +208,7 @@ class HTTPSessionBasedConnection {
     }
 
     // Function to log in to the SAP B1 Service Layer
-    public Object login(Map<String, String> payload) {
+    public def login(Map<String, String> payload) {
         try {
             def url = '/Login'
             def con = connect(url)
