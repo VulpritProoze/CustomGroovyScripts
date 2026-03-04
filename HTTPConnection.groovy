@@ -1,3 +1,8 @@
+/*
+** Note that this is an HTTP Connection by default. For a more secure connection, please use HTTPS.
+** This is only intended for testing.
+*/
+
 import java.net.URL
 import java.net.HttpURLConnection
 import groovy.json.JsonOutput
@@ -13,13 +18,13 @@ class RequestBody {
     boolean isPassSession = true
 }
 
-class SessionBasedConnection {
+class HTTPSessionBasedConnection {
 
     private String sessionVar
     private String sessionId
     private String baseUrl
 
-    public SessionBasedConnection(String baseUrl, String sessionVariable) {
+    public HTTPSessionBasedConnection(String baseUrl, String sessionVariable) {
         this.baseUrl = baseUrl
         this.sessionVar = sessionVariable
     }
@@ -72,86 +77,9 @@ class SessionBasedConnection {
     public Object get(RequestBody request) {
         def con = connect(request.url)
         con.setRequestMethod('GET')
-        con.doOutput = true
         for (prop in request.requestProperty) {
             con.setRequestProperty(prop.key, prop.value)
         }
-
-        if (request.isPassSession) {
-            if (!sessionId && !sessionVar) {
-                throw new RuntimeException('Missing sessionId and sessionVar for Connection')
-            }
-            con.setRequestProperty('Cookie', sessionVar + '=' + sessionId)
-        }
-
-        if (request.payload) {
-            con.outputStream.withCloseable { it << JsonOutput.toJson(request.payload) }
-        }
-
-        if (con.responseCode >= 200 && con.responseCode < 300) {
-            return new JsonSlurper().parse(con.inputStream.newReader())
-        } else {
-            def errorText = con.errorStream?.text ?: "No error details provided"
-            throw new RuntimeException("POST failed. HTTP ${con.responseCode}: $errorText")
-        }
-    }
-
-    public Object put(RequestBody request) {
-        def con = connect(request.url)
-        con.setRequestMethod('PUT')
-        con.doOutput = true
-        for (prop in request.requestProperty) {
-            con.setRequestProperty(prop.key, prop.value)
-        }
-
-        if (request.isPassSession) {
-            if (!sessionId && !sessionVar) {
-                throw new RuntimeException('Missing sessionId and sessionVar for Connection')
-            }
-            con.setRequestProperty('Cookie', sessionVar + '=' + sessionId)
-        }
-
-        if (request.payload) {
-            con.outputStream.withCloseable { it << JsonOutput.toJson(request.payload) }
-        }
-
-        if (con.responseCode >= 200 && con.responseCode < 300) {
-            return new JsonSlurper().parse(con.inputStream.newReader())
-        } else {
-            def errorText = con.errorStream?.text ?: "No error details provided"
-            throw new RuntimeException("PUT failed. HTTP ${con.responseCode}: $errorText")
-        }
-    }
-
-    public Object delete(RequestBody request) {
-        def con = connect(request.url)
-        con.setRequestMethod('DELETE')
-        for (prop in request.requestProperty) {
-            con.setRequestProperty(prop.key, prop.value)
-        }
-
-        if (request.isPassSession) {
-            if (!sessionId && !sessionVar) {
-                throw new RuntimeException('Missing sessionId and sessionVar for Connection')
-            }
-            con.setRequestProperty('Cookie', sessionVar + '=' + sessionId)
-        }
-
-        // DELETE can have a payload, though it is not standard
-        if (request.payload) {
-            con.doOutput = true
-            con.outputStream.withCloseable { it << JsonOutput.toJson(request.payload) }
-        }
-
-        if (con.responseCode >= 200 && con.responseCode < 300) {
-            // Some DELETE responses are 204 No Content
-            if (con.responseCode == 204) return [status: 'Success']
-            return new JsonSlurper().parse(con.inputStream.newReader())
-        } else {
-            def errorText = con.errorStream?.text ?: "No error details provided"
-            throw new RuntimeException("DELETE failed. HTTP ${con.responseCode}: $errorText")
-        }
-    }
 
         if (request.isPassSession) {
             if (!sessionId && !sessionVar) {
