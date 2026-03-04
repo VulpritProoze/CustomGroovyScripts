@@ -221,6 +221,11 @@ class HTTPSessionBasedConnection {
         }
     }
 
+    /**
+     * Executes an HTTP POST request.
+     * @param request The configuration object containing the URL, payload, and headers.
+     * @return The updated HTTPSessionBasedConnection instance for chaining.
+     */
     public def post(RequestBody request) {
         def con = connect(request.url)
         con.setRequestMethod('POST')
@@ -242,14 +247,20 @@ class HTTPSessionBasedConnection {
 
         int responseCode = con.responseCode
         if (responseCode >= 200 && responseCode < 300) {
-            return new JsonSlurper().parse(con.inputStream.newReader())
+            this.responseBody = new JsonSlurper().parse(con.inputStream.newReader())
+            return this
         } else {
             def errorText = con.errorStream?.text ?: "No error details provided"
             throw new RuntimeException("POST request failed to ${request.url}. HTTP $responseCode: $errorText")
         }
     }
 
-    // Function to log in to the SAP B1 Service Layer
+    /**
+     * Authenticates with the SAP Business One Service Layer.
+     * Automatically captures and stores the SessionId for subsequent requests.
+     * @param payload Map containing CompanyDB, UserName, and Password.
+     * @return The updated HTTPSessionBasedConnection instance.
+     */
     public def login(Map<String, String> payload) {
         try {
             def url = '/Login'
@@ -266,7 +277,8 @@ class HTTPSessionBasedConnection {
             if (con.responseCode == 200) {
                 def response = new JsonSlurper().parse(con.inputStream.newReader())
                 this.sessionId = response.SessionId
-                return parse(response.value)
+                this.responseBody = response
+                return this
             } else {
                 def errorText = con.getErrorStream()?.text ?: 'Unknown error'
                 throw new RuntimeException("Service Layer login failed. HTTP Response Code: $code, Error: $errorText")

@@ -1,10 +1,3 @@
-def InjectW3P() {
-
-}
-
-
-
-
 import com.sap.gateway.ip.core.customdev.util.Message;
 import com.sap.it.api.ITApiFactory
 import com.sap.it.api.securestore.SecureStoreService
